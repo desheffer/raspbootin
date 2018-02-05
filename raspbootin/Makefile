@@ -28,7 +28,7 @@ OBJS        += $(patsubst %.cc,%.o,$(SOURCES_CC))
 
 # Build flags
 DEPENDFLAGS := -MD -MP
-INCLUDES    := -I include
+INCLUDES    := -I .
 BASEFLAGS   := -O2 -fpic -nostdlib
 BASEFLAGS   += -nostartfiles -ffreestanding -nodefaultlibs
 BASEFLAGS   += -fno-builtin -fomit-frame-pointer -mcpu=arm1176jzf-s

@@ -23,18 +23,18 @@
 
 namespace UART {
     /*
-     * Initialize UART0.
+     * Initialize UART1.
      */
     void init(void);
 
     /*
-     * Transmit a byte via UART0.
+     * Transmit a byte via UART1.
      * uint8_t Byte: byte to send.
      */
     void putc(uint8_t byte);
 
     /*
-     * Receive a byte via UART0.
+     * Receive a byte via UART1.
      *
      * Returns:
      * uint8_t: byte received.

@@ -22,130 +22,99 @@
  */
 
 #include <stdint.h>
-#include <mmio.h>
-#include <uart.h>
+#include "uart.h"
+
+#define MMIO_BASE       0x3F000000
+
+#define GPFSEL0         ((volatile unsigned int*)(MMIO_BASE + 0x00200000))
+#define GPFSEL1         ((volatile unsigned int*)(MMIO_BASE + 0x00200004))
+#define GPFSEL2         ((volatile unsigned int*)(MMIO_BASE + 0x00200008))
+#define GPFSEL3         ((volatile unsigned int*)(MMIO_BASE + 0x0020000C))
+#define GPFSEL4         ((volatile unsigned int*)(MMIO_BASE + 0x00200010))
+#define GPFSEL5         ((volatile unsigned int*)(MMIO_BASE + 0x00200014))
+#define GPSET0          ((volatile unsigned int*)(MMIO_BASE + 0x0020001C))
+#define GPSET1          ((volatile unsigned int*)(MMIO_BASE + 0x00200020))
+#define GPCLR0          ((volatile unsigned int*)(MMIO_BASE + 0x00200028))
+#define GPLEV0          ((volatile unsigned int*)(MMIO_BASE + 0x00200034))
+#define GPLEV1          ((volatile unsigned int*)(MMIO_BASE + 0x00200038))
+#define GPEDS0          ((volatile unsigned int*)(MMIO_BASE + 0x00200040))
+#define GPEDS1          ((volatile unsigned int*)(MMIO_BASE + 0x00200044))
+#define GPHEN0          ((volatile unsigned int*)(MMIO_BASE + 0x00200064))
+#define GPHEN1          ((volatile unsigned int*)(MMIO_BASE + 0x00200068))
+#define GPPUD           ((volatile unsigned int*)(MMIO_BASE + 0x00200094))
+#define GPPUDCLK0       ((volatile unsigned int*)(MMIO_BASE + 0x00200098))
+#define GPPUDCLK1       ((volatile unsigned int*)(MMIO_BASE + 0x0020009C))
+
+#define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE + 0x00215004))
+#define AUX_MU_IO       ((volatile unsigned int*)(MMIO_BASE + 0x00215040))
+#define AUX_MU_IER      ((volatile unsigned int*)(MMIO_BASE + 0x00215044))
+#define AUX_MU_IIR      ((volatile unsigned int*)(MMIO_BASE + 0x00215048))
+#define AUX_MU_LCR      ((volatile unsigned int*)(MMIO_BASE + 0x0021504C))
+#define AUX_MU_MCR      ((volatile unsigned int*)(MMIO_BASE + 0x00215050))
+#define AUX_MU_LSR      ((volatile unsigned int*)(MMIO_BASE + 0x00215054))
+#define AUX_MU_MSR      ((volatile unsigned int*)(MMIO_BASE + 0x00215058))
+#define AUX_MU_SCRATCH  ((volatile unsigned int*)(MMIO_BASE + 0x0021505C))
+#define AUX_MU_CNTL     ((volatile unsigned int*)(MMIO_BASE + 0x00215060))
+#define AUX_MU_STAT     ((volatile unsigned int*)(MMIO_BASE + 0x00215064))
+#define AUX_MU_BAUD     ((volatile unsigned int*)(MMIO_BASE + 0x00215068))
 
 namespace UART {
-    enum {
-	// The GPIO registers base address.
-	GPIO_OFFSET = 0x00200000,
-
-	// The offsets for reach register.
-
-	// Controls actuation of pull up/down to ALL GPIO pins.
-	GPPUD = (GPIO_OFFSET + 0x94),
-
-	// Controls actuation of pull up/down for specific GPIO pin.
-	GPPUDCLK0 = (GPIO_OFFSET + 0x98),
-
-	// The base address for UART.
-	UART0_OFFSET = GPIO_OFFSET + 0x00001000,
-
-	// The offsets for reach register for the UART.
-	UART0_DR     = (UART0_OFFSET + 0x00),
-	UART0_RSRECR = (UART0_OFFSET + 0x04),
-	UART0_FR     = (UART0_OFFSET + 0x18),
-	UART0_ILPR   = (UART0_OFFSET + 0x20),
-	UART0_IBRD   = (UART0_OFFSET + 0x24),
-	UART0_FBRD   = (UART0_OFFSET + 0x28),
-	UART0_LCRH   = (UART0_OFFSET + 0x2C),
-	UART0_CR     = (UART0_OFFSET + 0x30),
-	UART0_IFLS   = (UART0_OFFSET + 0x34),
-	UART0_IMSC   = (UART0_OFFSET + 0x38),
-	UART0_RIS    = (UART0_OFFSET + 0x3C),
-	UART0_MIS    = (UART0_OFFSET + 0x40),
-	UART0_ICR    = (UART0_OFFSET + 0x44),
-	UART0_DMACR  = (UART0_OFFSET + 0x48),
-	UART0_ITCR   = (UART0_OFFSET + 0x80),
-	UART0_ITIP   = (UART0_OFFSET + 0x84),
-	UART0_ITOP   = (UART0_OFFSET + 0x88),
-	UART0_TDR    = (UART0_OFFSET + 0x8C),
-    };
-
     /*
-     * delay function
-     * int32_t delay: number of cycles to delay
-     *
-     * This just loops <delay> times in a way that the compiler
-     * wont optimize away.
-     */
-    void delay(int32_t count) {
-	asm volatile("1: subs %[count], %[count], #1; bne 1b"
-		     : : [count]"r"(count));
-    }
-    
-    /*
-     * Initialize UART0.
+     * Initialize UART1.
      */
     void init(void) {
-	// Disable UART0.
-	MMIO::write(UART0_CR, 0x00000000);
-	// Setup the GPIO pin 14 && 15.
-    
-	// Disable pull up/down for all GPIO pins & delay for 150 cycles.
-	MMIO::write(GPPUD, 0x00000000);
-	delay(150);
+        register unsigned int r;
 
-	// Disable pull up/down for pin 14,15 & delay for 150 cycles.
-	MMIO::write(GPPUDCLK0, (1 << 14) | (1 << 15));
-	delay(150);
-
-	// Write 0 to GPPUDCLK0 to make it take effect.
-	MMIO::write(GPPUDCLK0, 0x00000000);
-    
-	// Clear pending interrupts.
-	MMIO::write(UART0_ICR, 0x7FF);
-
-	// Set integer & fractional part of baud rate.
-	// Divider = UART_CLOCK/(16 * Baud)
-	// Fraction part register = (Fractional part * 64) + 0.5
-	// UART_CLOCK = 3000000; Baud = 115200.
-
-	// Divider = 3000000/(16 * 115200) = 1.627 = ~1.
-	// Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-	MMIO::write(UART0_IBRD, 1);
-	MMIO::write(UART0_FBRD, 40);
-
-	// Enable FIFO & 8 bit data transmissio (1 stop bit, no parity).
-	MMIO::write(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
-
-	// Mask all interrupts.
-	MMIO::write(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) |
-		    (1 << 6) | (1 << 7) | (1 << 8) |
-		    (1 << 9) | (1 << 10));
-
-	// Enable UART0, receive & transfer part of UART.
-	MMIO::write(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
+        /* initialize UART */
+        *AUX_ENABLE |= 1;       // enable UART1, AUX mini uart
+        *AUX_MU_IER = 0;
+        *AUX_MU_CNTL = 0;
+        *AUX_MU_LCR = 3;       // 8 bits
+        *AUX_MU_MCR = 0;
+        *AUX_MU_IER = 0;
+        *AUX_MU_IIR = 0xc6;    // disable interrupts
+        *AUX_MU_BAUD = 270;    // 115200 baud
+        /* map UART1 to GPIO pins */
+        r = *GPFSEL1;
+        r &= ~((7 << 12) | (7 << 15)); // gpio14, gpio15
+        r |= (2 << 12) | (2 << 15);    // alt5
+        *GPFSEL1 = r;
+        *GPPUD = 0;            // enable pins 14 and 15
+        for (r = 150; r > 0; --r) {
+            asm volatile("nop");
+        }
+        *GPPUDCLK0 = (1 << 14) | (1 << 15);
+        for (r = 150; r > 0; --r) {
+            asm volatile("nop");
+        }
+        *GPPUDCLK0 = 0;        // flush GPIO setup
+        *AUX_MU_CNTL = 3;      // enable Tx, Rx
     }
 
     /*
-     * Transmit a byte via UART0.
+     * Transmit a byte via UART1.
      * uint8_t Byte: byte to send.
      */
     void putc(uint8_t byte) {
-	// wait for UART to become ready to transmit
-	while(true) {
-	    if (!(MMIO::read(UART0_FR) & (1 << 5))) {
-		break;
-	    }
-	}
-	MMIO::write(UART0_DR, byte);
+        do {
+            asm volatile("nop");
+        } while (!(*AUX_MU_LSR & 0x20));
+
+        *AUX_MU_IO = byte;
     }
 
     /*
-     * Receive a byte via UART0.
+     * Receive a byte via UART1.
      *
      * Returns:
      * uint8_t: byte received.
      */
     uint8_t getc(void) {
-	// wait for UART to have recieved something
-	while(true) {
-	    if (!(MMIO::read(UART0_FR) & (1 << 4))) {
-		break;
-	    }
-	}
-	return MMIO::read(UART0_DR);
+        do {
+            asm volatile("nop");
+        } while (!(*AUX_MU_LSR & 0x01));
+
+        return (char)(*AUX_MU_IO);
     }
 
     /*
@@ -153,8 +122,8 @@ namespace UART {
      * const char *str: 0-terminated string
      */
     void puts(const char *str) {
-	while(*str) {
-	    UART::putc(*str++);
-	}
+        while (*str) {
+            putc(*str++);
+        }
     }
 }

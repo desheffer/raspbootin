@@ -32,7 +32,7 @@ SECTIONS
     _text_end = .;
     _rodata_start = .;
     .rodata : {
-	*(.rodata)
+        *(.rodata)
     }
     . = ALIGN(4096); /* align to page size */
     _rodata_end = .;
@@ -49,6 +49,6 @@ SECTIONS
     }
     . = ALIGN(4096); /* align to page size */
     _bss_end = .;
-    
+
     _end = .;
 }
