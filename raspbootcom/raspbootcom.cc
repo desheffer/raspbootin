@@ -26,9 +26,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <endian.h>
 #include <stdint.h>
 #include <termios.h>
+#include "endian.h"
 
 #define BUF_SIZE 65536
 
