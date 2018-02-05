@@ -108,7 +108,6 @@ again:
     }
 
     // Kernel is loaded at 0x8000, call it via function pointer
-    UART::puts("booting...");
     entry_fn fn = (entry_fn)0x8000;
     fn(r0, r1, atags);
 
