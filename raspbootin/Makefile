@@ -15,62 +15,47 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# build environment
-ARMGNU ?= arm-none-eabi
+TOOLCHAIN ?= arm-none-eabi
 
-# source files
 SOURCES_ASM := $(wildcard *.S)
 SOURCES_CC  := $(wildcard *.cc)
 
-# object files
-OBJS        := $(patsubst %.S,%.o,$(SOURCES_ASM))
-OBJS        += $(patsubst %.cc,%.o,$(SOURCES_CC))
+OBJS := $(patsubst %.S, %.o, $(SOURCES_ASM))
+OBJS += $(patsubst %.cc, %.o, $(SOURCES_CC))
 
-# Build flags
-DEPENDFLAGS := -MD -MP
-INCLUDES    := -I .
-BASEFLAGS   := -O2 -fpic -nostdlib
-BASEFLAGS   += -nostartfiles -ffreestanding -nodefaultlibs
-BASEFLAGS   += -fno-builtin -fomit-frame-pointer -mcpu=arm1176jzf-s
-WARNFLAGS   := -Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings
-WARNFLAGS   += -Wredundant-decls -Winline
-WARNFLAGS   += -Wno-attributes -Wno-deprecated-declarations
-WARNFLAGS   += -Wno-div-by-zero -Wno-endif-labels -Wfloat-equal
-WARNFLAGS   += -Wformat=2 -Wno-format-extra-args -Winit-self
-WARNFLAGS   += -Winvalid-pch -Wmissing-format-attribute
-WARNFLAGS   += -Wmissing-include-dirs -Wno-multichar
-WARNFLAGS   += -Wredundant-decls -Wshadow
-WARNFLAGS   += -Wno-sign-compare -Wswitch -Wsystem-headers
-WARNFLAGS   += -Wno-pragmas -Wno-unused-but-set-parameter
-WARNFLAGS   += -Wno-unused-but-set-variable -Wno-unused-result
-WARNFLAGS   += -Wwrite-strings -Wdisabled-optimization -Wpointer-arith
-ASFLAGS     := $(INCLUDES) $(DEPENDFLAGS) -D__ASSEMBLY__
-CXXFLAGS    := $(INCLUDES) $(DEPENDFLAGS) $(BASEFLAGS) $(WARNFLAGS)
-CXXFLAGS    += -fno-exceptions -std=gnu++11
-LDFLAGS     := $(BASEFLAGS)
+BASEFLAGS := -O2 -fpic -nostdlib
+BASEFLAGS += -nostartfiles -ffreestanding -nodefaultlibs
+BASEFLAGS += -fno-builtin -fomit-frame-pointer -mcpu=cortex-a53
+WARNFLAGS := -Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings
+WARNFLAGS += -Wredundant-decls -Winline
+WARNFLAGS += -Wno-attributes -Wno-deprecated-declarations
+WARNFLAGS += -Wno-div-by-zero -Wno-endif-labels -Wfloat-equal
+WARNFLAGS += -Wformat=2 -Wno-format-extra-args -Winit-self
+WARNFLAGS += -Winvalid-pch -Wmissing-format-attribute
+WARNFLAGS += -Wmissing-include-dirs -Wno-multichar
+WARNFLAGS += -Wredundant-decls -Wshadow
+WARNFLAGS += -Wno-sign-compare -Wswitch -Wsystem-headers
+WARNFLAGS += -Wno-pragmas -Wno-unused-but-set-parameter
+WARNFLAGS += -Wno-unused-but-set-variable -Wno-unused-result
+WARNFLAGS += -Wwrite-strings -Wdisabled-optimization -Wpointer-arith
+ASFLAGS   := -D__ASSEMBLY__
+CXXFLAGS  := $(BASEFLAGS) $(WARNFLAGS)
+CXXFLAGS  += -fno-exceptions -std=gnu++11
+LDFLAGS   := $(BASEFLAGS)
 
-# build rules
 all: kernel.img
 
-include $(wildcard *.d)
-
 kernel.elf: $(OBJS) link-arm-eabi.ld
-	$(ARMGNU)-g++ $(LDFLAGS) $(OBJS) -lgcc -Tlink-arm-eabi.ld -o $@
+	$(TOOLCHAIN)-g++ $(LDFLAGS) $(OBJS) -lgcc -Tlink-arm-eabi.ld -o $@
 
 kernel.img: kernel.elf
-	$(ARMGNU)-objcopy kernel.elf -O binary kernel.img
+	$(TOOLCHAIN)-objcopy kernel.elf -O binary kernel.img
 
 clean:
 	$(RM) -f $(OBJS) kernel.elf kernel.img
 
-dist-clean: clean
-	find -name "*~" -delete
-	find -name "*.d" -delete
-
-# C++.
 %.o: %.cc Makefile
-	$(ARMGNU)-g++ $(CXXFLAGS) -c $< -o $@
+	$(TOOLCHAIN)-g++ $(CXXFLAGS) -c $< -o $@
 
-# AS.
 %.o: %.S Makefile
-	$(ARMGNU)-g++ $(ASFLAGS) -c $< -o $@
+	$(TOOLCHAIN)-g++ $(ASFLAGS) -c $< -o $@

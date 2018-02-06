@@ -22,8 +22,3 @@ all:
 %:
 	$(MAKE) -C raspbootin $@
 	$(MAKE) -C raspbootcom $@
-
-dist-clean:
-	$(MAKE) -C raspbootin $@
-	$(MAKE) -C raspbootcom $@
-	find -name "*~" -delete

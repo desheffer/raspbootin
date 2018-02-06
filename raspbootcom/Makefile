@@ -15,16 +15,12 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# source files
-SOURCES  := $(wildcard *.cc)
+SOURCES := $(wildcard *.cc)
 
-# object files
-OBJS        += $(patsubst %.cc,%.o,$(SOURCES))
+OBJS := $(patsubst %.cc, %.o, $(SOURCES))
 
-# Build flags
-CXXFLAGS    := -O2 -W -Wall -g
+CXXFLAGS := -O2 -W -Wall -g
 
-# build rules
 all: raspbootcom
 
 raspbootcom: raspbootcom.o
@@ -33,10 +29,5 @@ raspbootcom: raspbootcom.o
 clean:
 	$(RM) -f $(OBJS) raspbootcom
 
-dist-clean: clean
-	find -name "*~" -delete
-	find -name "*.d" -delete
-
-# C++.
 %.o: %.cc Makefile
 	g++ $(CXXFLAGS) -c $< -o $@
