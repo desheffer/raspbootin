@@ -35,7 +35,6 @@ typedef void (*entry_fn)(uint32_t r0, uint32_t r1, uint32_t atags);
 // kernel main function, it all begins here
 void kernel_main(uint32_t r0, uint32_t r1, uint32_t atags) {
     UART::init();
-again:
     UART::puts(hello);
 
     // request kernel by sending 3 breaks
@@ -53,27 +52,24 @@ again:
     size |= UART::getc() << 16;
     size |= UART::getc() << 24;
 
-    if (0x8000 + size > LOADER_ADDR) {
+    if (0x80000 + size > LOADER_ADDR) {
         UART::puts("SE");
-        goto again;
+        return;
     } else {
         UART::puts("OK");
     }
 
+    uint8_t *kernel = (uint8_t*)0x80000;
+    entry_fn fn = (entry_fn)kernel;
+
     // get kernel
-    uint8_t *kernel = (uint8_t*)0x8000;
     while (size-- > 0) {
         *kernel++ = UART::getc();
     }
 
-    // Kernel is loaded at 0x8000, call it via function pointer
-    entry_fn fn = (entry_fn)0x8000;
+    // call the kernel
     fn(r0, r1, atags);
 
-    // fn() should never return. But it might, so make sure we catch it.
-    // Wait a bit
-    for (volatile int i = 0; i < 10000000; ++i) {}
-
-    // Say goodbye and return to boot.S to halt.
+    // say goodbye and halt
     UART::puts(halting);
 }

@@ -1,7 +1,7 @@
 raspbootin
 ==========
 
-Simple boot-over-serial bootloader for the Raspberry Pi
+Simple boot-over-serial bootloader for the Raspberry Pi 3 (64-bit).
 
 The Raspbootin repository contains 2 components: Raspbootin and Raspbootcom.
 
@@ -35,12 +35,12 @@ it.
 Compiling:
 ----------
 
-The build system is very simple. Ensure that the `arm-none-eabi` tools are in
-your path and run `make`.
+The build system is very simple. Ensure that the `gcc-aarch64-none-elf` tools
+are in your path and run `make`.
 
 Usage:
 ------
 
-- Copy the raspbootin/kernel.img to the SD Card for the Raspberry Pi.
-- Run raspbootcom/raspbootcom /dev/ttyUSB0 /where/you/have/your/kernel.img.
+- Copy the `raspbootin/kernel8.img` to the SD Card for the Raspberry Pi.
+- Run `raspbootcom/raspbootcom /dev/tty.usbserial /path/to/kernel8.img`.
 - Turn on the Raspberry Pi.

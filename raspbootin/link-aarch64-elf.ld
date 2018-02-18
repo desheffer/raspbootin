@@ -1,4 +1,4 @@
-/* link-arm-eabi.ld - linker script for arm eabi */
+/* link-aarch64-elf.ld - linker script for link-aarch64-elf.ld */
 /* Copyright (C) 2013 Goswin von Brederlow <goswin-v-b@web.de>
 
    This program is free software; you can redistribute it and/or modify
@@ -16,39 +16,43 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-ENTRY(Start)
+ENTRY(_start)
 
 SECTIONS
 {
     /* Starts at LOADER_ADDR. */
     . = 0x2000000;
-    _start = .;
-    _text_start = .;
+    __start = .;
+
+    __text_start = .;
     .text : {
         KEEP(*(.text.boot))
         *(.text)
     }
     . = ALIGN(4096); /* align to page size */
-    _text_end = .;
-    _rodata_start = .;
+    __text_end = .;
+
+    __rodata_start = .;
     .rodata : {
         *(.rodata)
     }
     . = ALIGN(4096); /* align to page size */
-    _rodata_end = .;
-    _data_start = .;
+    __rodata_end = .;
+
+    __data_start = .;
     .data : {
         *(.data)
     }
     . = ALIGN(4096); /* align to page size */
-    _data_end = .;
-    _bss_start = .;
+    __data_end = .;
+
+    __bss_start = .;
     .bss : {
         bss = .;
         *(.bss)
     }
     . = ALIGN(4096); /* align to page size */
-    _bss_end = .;
+    __bss_end = .;
 
-    _end = .;
+    __end = .;
 }

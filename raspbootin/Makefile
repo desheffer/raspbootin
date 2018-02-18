@@ -15,7 +15,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-TOOLCHAIN ?= arm-none-eabi
+TOOLCHAIN ?= aarch64-none-elf
 
 SOURCES_ASM := $(wildcard *.S)
 SOURCES_CC  := $(wildcard *.cc)
@@ -43,16 +43,16 @@ CXXFLAGS  := $(BASEFLAGS) $(WARNFLAGS)
 CXXFLAGS  += -fno-exceptions -std=gnu++11
 LDFLAGS   := $(BASEFLAGS)
 
-all: kernel.img
+all: kernel8.img
 
-kernel.elf: $(OBJS) link-arm-eabi.ld
-	$(TOOLCHAIN)-g++ $(LDFLAGS) $(OBJS) -lgcc -Tlink-arm-eabi.ld -o $@
+kernel8.elf: $(OBJS) link-aarch64-elf.ld
+	$(TOOLCHAIN)-g++ $(LDFLAGS) $(OBJS) -lgcc -Tlink-aarch64-elf.ld -o $@
 
-kernel.img: kernel.elf
-	$(TOOLCHAIN)-objcopy kernel.elf -O binary kernel.img
+kernel8.img: kernel8.elf
+	$(TOOLCHAIN)-objcopy kernel8.elf -O binary kernel8.img
 
 clean:
-	$(RM) -f $(OBJS) kernel.elf kernel.img
+	$(RM) -f $(OBJS) kernel8.elf kernel8.img
 
 %.o: %.cc Makefile
 	$(TOOLCHAIN)-g++ $(CXXFLAGS) -c $< -o $@
